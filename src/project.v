@@ -17,8 +17,9 @@ module tt_um_multiplier (
 );
 
 
-    assign m = ui_in [3:0];
-    assign q = ui_in [7:4];
+    wire m [3:0] = ui_in [3:0];
+    wire q [3:0] = ui_in [7:4];
+    wire p [7:0] = 8'b00000000;
     wire [12:0]temp_carry;
     wire [12:0]temp_adds;
     reg [7:0] p;
@@ -45,7 +46,7 @@ module tt_um_multiplier (
   assign uio_oe  = 0;
 
   // List all unused inputs to prevent warnings
-  wire _unused = &{ena, clk, rst_n, uio_in 1'b0};
+  wire _unused = &{ena, clk, rst_n, uio_in, 1'b0};
 endmodule
 
 
