@@ -1,24 +1,31 @@
-/*
- * Copyright (c) 2024 Your Name
- * SPDX-License-Identifier: Apache-2.0
- */
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 10/11/2024 09:34:26 AM
+// Design Name: 
+// Module Name: array_mult
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
 
-`default_nettype none
 
-module tt_um_multiplier (
-    input  wire [7:0] ui_in,    // Dedicated inputs
-    output wire [7:0] uo_out,   // Dedicated outputs
-    input  wire [7:0] uio_in,   // IOs: Input path
-    output wire [7:0] uio_out,  // IOs: Output path
-    output wire [7:0] uio_oe,   // IOs: Enable path (active high: 0=input, 1=output)
-    input  wire       ena,      // always 1 when the design is powered, so you can ignore it
-    input  wire       clk,      // clock
-    input  wire       rst_n     // reset_n - low to reset
-);
-
-
-    assign m = ui_in [3:0];
-    assign q = ui_in [7:4];
+module array_mult_structural(
+    input [3:0]m,
+    input [3:0]q,
+    output [7:0]p
+    );
+    
     wire [12:0]temp_carry;
     wire [12:0]temp_adds;
     
@@ -38,12 +45,7 @@ module tt_um_multiplier (
     full_adder f10(temp_adds[4], (m[1] & q[3]), temp_carry[8], p[4], temp_carry[9]);
     full_adder f11(temp_adds[5], (m[2] & q[3]), temp_carry[9], p[5], temp_carry[10]);
     full_adder f12(temp_carry[7], (m[3] & q[3]), temp_carry[10], p[6], p[7]);
-    assign uo_out = p;
-      assign uio_out = 0;
-  assign uio_oe  = 0;
-
-  // List all unused inputs to prevent warnings
-  wire _unused = &{ena, clk, rst_n, uio_in 1'b0};
+    
 endmodule
 
 
@@ -58,3 +60,4 @@ module full_adder (a, b, c, dout, carry);
     assign dout = a ^ b ^ c;   
     assign carry = (a &b ) | (c & (a^b));
 endmodule
+
