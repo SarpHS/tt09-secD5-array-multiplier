@@ -19,6 +19,7 @@ module tt_um_multiplier (
 
     wire m [3:0] = ui_in [3:0];
     wire q [3:0] = ui_in [7:4];
+    wire p [7:0];
     wire [12:0]temp_carry;
     wire [12:0]temp_adds;
     
