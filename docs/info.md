@@ -13,6 +13,7 @@ You can also include images in this folder and reference them in the markdown. E
 Above is a diagram that represents a 4-bit multiplier, which takes in two 4-bit integers and outputs a single 8-bit integer.
 
 This was created using a manual structural design. We utilized a 1-bit full adder module in our implementation.
+
 * AND-Gates are utilized to multiply each bit of input `m` with each bit of input `q`.
 * We align partial products diagonally to mimic that of manual binary multiplication.
 * We use 1-bit Full Adders to add products and handle carries.
@@ -20,6 +21,7 @@ This was created using a manual structural design. We utilized a 1-bit full adde
 
 ## How to test
 Creating your own test cases:
+
 * Go to the `test` folder and locate `test.py`.
 * Edit `test.py` and add your own custom test cases.
 
@@ -30,8 +32,11 @@ dut.ui_in.value = 0b00000001
 await ClockCycles(dut.clk, 1)
 assert dut.uo_out.value = 0b00000000
 ```
+
 * Run the test with `make` and check the tests passed.
-___
+
+---
+
 * If you've forked the repository
 * Commit and push your changes to your forked repository
 * Check Github Actions to check if your tests have passed
