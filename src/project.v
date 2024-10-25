@@ -16,9 +16,8 @@ module tt_um_multiplier (
     input  wire       rst_n     // reset_n - low to reset
 );
 
-
-    wire m [3:0] = ui_in [3:0];
-    wire q [3:0] = ui_in [7:4];
+    wire [3:0] m = ui_in [3:0];
+    wire [3:0] q = ui_in [7:4];
     wire [12:0]temp_carry;
     wire [12:0]temp_adds;
     wire [7:0] p;
