@@ -21,8 +21,10 @@ module tt_um_multiplier (
     assign q = ui_in [7:4];
     wire [12:0]temp_carry;
     wire [12:0]temp_adds;
+    reg [7:0] p;
     
     assign p[0] = m[0] & q[0];
+
     full_adder f1((m[1] & q[0]), (m[0] & q[1]), 0, p[1], temp_carry[0]);
     full_adder f2((m[2] & q[0]), (m[1] & q[1]), temp_carry[0], temp_adds[0], temp_carry[1]);
     full_adder f3((m[3] & q[0]), (m[2] & q[1]), temp_carry[1], temp_adds[1], temp_carry[2]);
