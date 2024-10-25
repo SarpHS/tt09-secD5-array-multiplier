@@ -8,13 +8,10 @@ You can also include images in this folder and reference them in the markdown. E
 -->
 
 ## How it works
-
-Explain how your project works
+Here we have a 4 bit multiplier that uses a bunch of full adders to multiply 2 4-bit numbers.
 
 ## How to test
-
-Explain how to use your project
+Run the Verilog.
 
 ## External hardware
-
-List external hardware used in your project (e.g. PMOD, LED display, etc), if any
+N/A
