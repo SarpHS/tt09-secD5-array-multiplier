@@ -30,8 +30,11 @@ dut.ui_in.value = 0b00000001
 await ClockCycles(dut.clk, 1)
 assert dut.uo_out.value = 0b00000000
 ```
-
 * Run the test with `make` and check the tests passed.
+___
+* If you've forked the repository
+* Commit and push your changes to your forked repository
+* Check Github Actions to check if your tests have passed
 
 ## External hardware
 N/A
