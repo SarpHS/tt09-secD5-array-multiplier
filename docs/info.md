@@ -19,7 +19,19 @@ This was created using a manual structural design. We utilized a 1-bit full adde
 * The outputs of the Full Adders eventually went to the bits of our output `p` which is an 8-bit integer.
 
 ## How to test
-Run the Verilog.
+Creating your own test cases:
+* Go to the `test` folder and locate `test.py`.
+* Edit `test.py` and add your own custom test cases.
+
+```py
+# Example
+# TEST CASE #0 -> 0 * 1
+dut.ui_in.value = 0b00000001
+await ClockCycles(dut.clk, 1)
+assert dut.uo_out.value = 0b00000000
+```
+
+* Run the test with `make` and check the tests passed.
 
 ## External hardware
 N/A
