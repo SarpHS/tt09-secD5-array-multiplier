@@ -1,61 +1,176 @@
 /*
- * Copyright (c) 2024 Your Name
- * SPDX-License-Identifier: Apache-2.0
+ * File: project.v
+ * Description: 4x4 Array Multiplier with top module tt_um_SarpHS_array_mult
  */
 
+`timescale 1ns / 1ps
 `default_nettype none
 
-module tt_um_multiplier (
-    input  wire [7:0] ui_in,    // Dedicated inputs
-    output wire [7:0] uo_out,   // Dedicated outputs
-    input  wire [7:0] uio_in,   // IOs: Input path
-    output wire [7:0] uio_out,  // IOs: Output path
-    output wire [7:0] uio_oe,   // IOs: Enable path (active high: 0=input, 1=output)
+// Top-Level Module
+module tt_um_SarpHS_array_mult (
+    input  wire [7:0] ui_in,    // 8 input pins from Tiny Tapeout
+    output wire [7:0] uo_out,   // 8 output pins to Tiny Tapeout
+    input  wire [7:0] uio_in,   // Unused
+    output wire [7:0] uio_out,  // Unused
+    output wire [7:0] uio_oe,   // Unused
     input  wire       ena,      // always 1 when the design is powered, so you can ignore it
     input  wire       clk,      // clock
     input  wire       rst_n     // reset_n - low to reset
 );
 
-    wire [3:0] m = ui_in [3:0];
-    wire [3:0] q = ui_in [7:4];
-    wire [12:0]temp_carry;
-    wire [12:0]temp_adds;
-    wire [7:0] p;
-    
-    assign p[0] = m[0] & q[0];
+    // Internal signals
+    wire [3:0] m;  // First operand
+    wire [3:0] q;  // Second operand
+    wire [7:0] p;  // Product
 
-    full_adder f1((m[1] & q[0]), (m[0] & q[1]), 0, p[1], temp_carry[0]);
-    full_adder f2((m[2] & q[0]), (m[1] & q[1]), temp_carry[0], temp_adds[0], temp_carry[1]);
-    full_adder f3((m[3] & q[0]), (m[2] & q[1]), temp_carry[1], temp_adds[1], temp_carry[2]);
-    full_adder f4(0, (m[3] & q[1]), temp_carry[2], temp_adds[2], temp_carry[3]);
-    
-    
-    full_adder f5(temp_adds[0], (m[0] & q[2]), 0, p[2], temp_carry[4]);
-    full_adder f6(temp_adds[1], (m[1] & q[2]), temp_carry[4], temp_adds[3], temp_carry[5]);
-    full_adder f7(temp_adds[2], (m[2] & q[2]), temp_carry[5], temp_adds[4], temp_carry[6]);
-    full_adder f8(temp_carry[3], (m[3] & q[2]), temp_carry[6], temp_adds[5], temp_carry[7]);
-    
-    full_adder f9(temp_adds[3], (m[0] & q[3]), 0, p[3], temp_carry[8]);
-    full_adder f10(temp_adds[4], (m[1] & q[3]), temp_carry[8], p[4], temp_carry[9]);
-    full_adder f11(temp_adds[5], (m[2] & q[3]), temp_carry[9], p[5], temp_carry[10]);
-    full_adder f12(temp_carry[7], (m[3] & q[3]), temp_carry[10], p[6], p[7]);
+    // Assign inputs to operands
+    assign m = ui_in[3:0];
+    assign q = ui_in[7:4];
+
+    // Instantiate the multiplier module
+    array_mult_structural multiplier (
+        .m(m),
+        .q(q),
+        .p(p)
+    );
+
+    // Assign product to outputs
     assign uo_out = p;
-      assign uio_out = 0;
-  assign uio_oe  = 0;
 
-  // List all unused inputs to prevent warnings
-  wire _unused = &{ena, clk, rst_n, uio_in, 1'b0};
+    // Unused outputs
+    assign uio_out = 8'b0;
+    assign uio_oe  = 8'b0;
+
+    // List all unused inputs to prevent warnings
+    wire _unused = &{ena, clk, rst_n, uio_in};
+
 endmodule
 
+// Array Multiplier Module
+module array_mult_structural(
+    input [3:0] m,
+    input [3:0] q,
+    output [7:0] p
+    );
 
+    wire [3:0] pp[3:0];   // Partial products
+    wire [3:0] sum[2:0];  // Sum wires
+    wire [3:0] carry[2:0];// Carry wires
 
-module full_adder (a, b, c, dout, carry);
-    input a;
-    input b;
-    input c;
-    output dout;
-    output carry;
+    // Generate partial products
+    genvar i, j;
+    generate
+        for (i=0; i<4; i=i+1) begin: loop_i
+            for (j=0; j<4; j=j+1) begin: loop_j
+                assign pp[i][j] = m[i] & q[j];
+            end
+        end
+    endgenerate
 
-    assign dout = a ^ b ^ c;   
-    assign carry = (a &b ) | (c & (a^b));
+    // First stage
+    assign p[0] = pp[0][0];
+
+    // First row
+    full_adder fa0_1 (
+        .a(pp[0][1]),
+        .b(pp[1][0]),
+        .cin(1'b0),
+        .sum(p[1]),
+        .cout(carry[0][0])
+    );
+    full_adder fa0_2 (
+        .a(pp[0][2]),
+        .b(pp[1][1]),
+        .cin(carry[0][0]),
+        .sum(sum[0][0]),
+        .cout(carry[0][1])
+    );
+    full_adder fa0_3 (
+        .a(pp[0][3]),
+        .b(pp[1][2]),
+        .cin(carry[0][1]),
+        .sum(sum[0][1]),
+        .cout(carry[0][2])
+    );
+    full_adder fa0_4 (
+        .a(1'b0),
+        .b(pp[1][3]),
+        .cin(carry[0][2]),
+        .sum(sum[0][2]),
+        .cout(carry[0][3])
+    );
+
+    // Second row
+    full_adder fa1_1 (
+        .a(sum[0][0]),
+        .b(pp[2][0]),
+        .cin(1'b0),
+        .sum(p[2]),
+        .cout(carry[1][0])
+    );
+    full_adder fa1_2 (
+        .a(sum[0][1]),
+        .b(pp[2][1]),
+        .cin(carry[1][0]),
+        .sum(sum[1][0]),
+        .cout(carry[1][1])
+    );
+    full_adder fa1_3 (
+        .a(sum[0][2]),
+        .b(pp[2][2]),
+        .cin(carry[1][1]),
+        .sum(sum[1][1]),
+        .cout(carry[1][2])
+    );
+    full_adder fa1_4 (
+        .a(carry[0][3]),
+        .b(pp[2][3]),
+        .cin(carry[1][2]),
+        .sum(sum[1][2]),
+        .cout(carry[1][3])
+    );
+
+    // Third row
+    full_adder fa2_1 (
+        .a(sum[1][0]),
+        .b(pp[3][0]),
+        .cin(1'b0),
+        .sum(p[3]),
+        .cout(carry[2][0])
+    );
+    full_adder fa2_2 (
+        .a(sum[1][1]),
+        .b(pp[3][1]),
+        .cin(carry[2][0]),
+        .sum(p[4]),
+        .cout(carry[2][1])
+    );
+    full_adder fa2_3 (
+        .a(sum[1][2]),
+        .b(pp[3][2]),
+        .cin(carry[2][1]),
+        .sum(p[5]),
+        .cout(carry[2][2])
+    );
+    full_adder fa2_4 (
+        .a(carry[1][3]),
+        .b(pp[3][3]),
+        .cin(carry[2][2]),
+        .sum(p[6]),
+        .cout(p[7])
+    );
+
 endmodule
+
+// Full Adder Module
+module full_adder(
+    input a,
+    input b,
+    input cin,
+    output sum,
+    output cout
+);
+    assign {cout, sum} = a + b + cin;
+endmodule
+
+`default_nettype wire
