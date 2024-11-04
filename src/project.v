@@ -6,7 +6,7 @@
 `timescale 1ns / 1ps
 `default_nettype none
 
-// Top-Level Module
+// Top-Level Module with flattened design
 module tt_um_SarpHS_array_mult (
     input  wire [7:0] ui_in,    // 8 input pins from Tiny Tapeout
     output wire [7:0] uo_out,   // 8 output pins to Tiny Tapeout
@@ -18,12 +18,10 @@ module tt_um_SarpHS_array_mult (
     input  wire       rst_n     // reset_n - low to reset
 );
 
-    // Define input signals for operands
-    wire [3:0] m = ui_in[3:0];
-    wire [3:0] q = ui_in[7:4];
-    wire [7:0] p;
-
-    // Partial product and carry wires
+    // Internal signals
+    wire [3:0] m = ui_in[3:0];   // First operand
+    wire [3:0] q = ui_in[7:4];   // Second operand
+    wire [7:0] p;                // Product
     wire [12:0] temp_carry;
     wire [12:0] temp_adds;
 
@@ -45,7 +43,7 @@ module tt_um_SarpHS_array_mult (
     full_adder f11(temp_adds[5], (m[2] & q[3]), temp_carry[9], p[5], temp_carry[10]);
     full_adder f12(temp_carry[7], (m[3] & q[3]), temp_carry[10], p[6], p[7]);
 
-    // Assign product to output
+    // Assign product to outputs
     assign uo_out = p;
 
     // Unused outputs
