@@ -1,77 +1,50 @@
-# SPDX-FileCopyrightText: © 2024 Tiny Tapeout
-# SPDX-License-Identifier: Apache-2.0
+# File: test.py
 
 import cocotb
-from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles
-
+from cocotb.triggers import Timer
+import cocotb.log
+import random
 
 @cocotb.test()
-async def test_project(dut):
-    dut._log.info("Start")
+async def array_mult_test(dut):
+    """Test the 4x4 array multiplier via ui_in and uo_out"""
 
-    # Set the clock period to 10 us (100 KHz)
-    clock = Clock(dut.clk, 10, units="us")
-    cocotb.start_soon(clock.start())
+    # Define the test cases
+    test_cases = [
+        (1, 1, 1),     # 1 * 1 = 1
+        (2, 2, 4),     # 2 * 2 = 4
+        (3, 3, 9),     # 3 * 3 = 9
+        (4, 4, 16),    # 4 * 4 = 16
+        (7, 7, 49),    # 7 * 7 = 49
+        (8, 8, 64),    # 8 * 8 = 64
+        (15, 15, 225), # 15 * 15 = 225
+        (0, 15, 0),    # 0 * 15 = 0
+        (15, 0, 0),    # 15 * 0 = 0
+        (5, 3, 15),    # 5 * 3 = 15
+    ]
 
-    # Reset
-    dut._log.info("Reset")
-    dut.ena.value = 1
-    dut.ui_in.value = 0
-    dut.uio_in.value = 0
-    dut.rst_n.value = 0
-    await ClockCycles(dut.clk, 10)
-    dut.rst_n.value = 1
+    failures = 0
 
-    dut._log.info("Test project behavior")
+    for m_val, q_val, expected_p in test_cases:
+        # Prepare inputs
+        ui_in_val = (q_val << 4) | m_val
+        dut.ui_in.value = ui_in_val
 
-    # Set the input values you want to test
-    # TEST 1 4 * 2 
-    dut.ui_in.value = 0b01000010
+        # Wait for combinational logic to settle
+        await Timer(1, units='ns')
 
-    # Wait for one clock cycle to see the output values
-    await ClockCycles(dut.clk, 1)
+        # Read the output
+        p_val = dut.uo_out.value.integer
 
-    # The following assersion is just an example of how to check the output values.
-    # Change it to match the actual expected output of your module:
-    assert dut.uo_out.value == 0b00001000   
+        # Check if the output matches the expected value
+        if p_val != expected_p:
+            failures += 1
+            dut._log.error(f"Test failed for m={m_val}, q={q_val}: p={p_val}, expected={expected_p}")
+        else:
+            dut._log.info(f"Test passed for m={m_val}, q={q_val}: p={p_val}")
 
-    # TEST 2 2 * 2
-    dut.ui_in.value = 0b00100010
-
-    # Wait for one clock cycle to see the output values
-    await ClockCycles(dut.clk, 1)
-
-    # The following assersion is just an example of how to check the output values.
-    # Change it to match the actual expected output of your module:
-    assert dut.uo_out.value == 0b00000100   
-
-    # TEST 3 8 * 0
-    dut.ui_in.value = 0b10000000
-
-    # Wait for one clock cycle to see the output values
-    await ClockCycles(dut.clk, 1)
-
-    # The following assersion is just an example of how to check the output values.
-    # Change it to match the actual expected output of your module:
-    assert dut.uo_out.value == 0b00000000
-
-    # TEST 4 8 * 8
-    dut.ui_in.value = 0b10001000
-
-    # Wait for one clock cycle to see the output values
-    await ClockCycles(dut.clk, 1)
-
-    # The following assersion is just an example of how to check the output values.
-    # Change it to match the actual expected output of your module:
-    assert dut.uo_out.value == 0b01000000
-
-    # TEST 5 0 * 1
-    dut.ui_in.value = 0b00000001
-
-    # Wait for one clock cycle to see the output values
-    await ClockCycles(dut.clk, 1)
-
-    # The following assersion is just an example of how to check the output values.
-    # Change it to match the actual expected output of your module:
-    assert dut.uo_out.value == 0b00000000
+    if failures == 0:
+        dut._log.info("All tests passed")
+    else:
+        dut._log.error(f"{failures} tests failed")
+        assert False, f"{failures} tests failed"
