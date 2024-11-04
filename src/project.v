@@ -1,27 +1,25 @@
 /*
- * File: project.v
- * Description: 4x4 Array Multiplier with top module tt_um_SarpHS_array_mult
+ * Copyright (c) 2024 Your Name
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-`timescale 1ns / 1ps
 `default_nettype none
 
-// Top-Level Module with flattened design
 module tt_um_SarpHS_array_mult (
     input  wire [7:0] ui_in,    // 8 input pins from Tiny Tapeout
     output wire [7:0] uo_out,   // 8 output pins to Tiny Tapeout
-    input  wire [7:0] uio_in,   // Unused
-    output wire [7:0] uio_out,  // Unused
-    output wire [7:0] uio_oe,   // Unused
+    input  wire [7:0] uio_in,   // IOs: Input path (unused)
+    output wire [7:0] uio_out,  // IOs: Output path (unused)
+    output wire [7:0] uio_oe,   // IOs: Enable path (unused)
     input  wire       ena,      // always 1 when the design is powered, so you can ignore it
     input  wire       clk,      // clock
     input  wire       rst_n     // reset_n - low to reset
 );
 
-    // Internal signals
-    wire [3:0] m = ui_in[3:0];   // First operand
-    wire [3:0] q = ui_in[7:4];   // Second operand
-    wire [7:0] p;                // Product
+    // Define inputs for operands
+    wire [3:0] m = ui_in[3:0];
+    wire [3:0] q = ui_in[7:4];
+    wire [7:0] p;
     wire [12:0] temp_carry;
     wire [12:0] temp_adds;
 
@@ -43,15 +41,15 @@ module tt_um_SarpHS_array_mult (
     full_adder f11(temp_adds[5], (m[2] & q[3]), temp_carry[9], p[5], temp_carry[10]);
     full_adder f12(temp_carry[7], (m[3] & q[3]), temp_carry[10], p[6], p[7]);
 
-    // Assign product to outputs
+    // Assign product to output
     assign uo_out = p;
 
     // Unused outputs
     assign uio_out = 8'b0;
-    assign uio_oe = 8'b0;
+    assign uio_oe  = 8'b0;
 
     // List all unused inputs to prevent warnings
-    wire _unused = &{ena, clk, rst_n, uio_in};
+    wire _unused = &{ena, clk, rst_n, uio_in, 1'b0};
 
 endmodule
 
@@ -59,12 +57,12 @@ endmodule
 module full_adder(
     input a,
     input b,
-    input cin,
-    output sum,
-    output cout
+    input c,
+    output dout,
+    output carry
 );
-    assign sum = a ^ b ^ cin;
-    assign cout = (a & b) | (cin & (a ^ b));
+    assign dout = a ^ b ^ c;
+    assign carry = (a & b) | (c & (a ^ b));
 endmodule
 
 `default_nettype wire
